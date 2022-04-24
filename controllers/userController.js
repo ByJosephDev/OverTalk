@@ -1,10 +1,22 @@
 const model = require('../models/userScheme');
+const bcrypt = require('bcrypt');
 
-const create = (req, res) => {
+const create = async (req, res) => {
 
-    const data = model(req.body);
+    //const data = model(req.body);
 
-    model.create(data, (err, docs) => {
+    password = req.body.password
+
+    passwordHash = await bcrypt.hash(password, 8)
+
+
+    const dataPrueba = {
+        username: req.body.username,
+        email : req.body.email,
+        password: passwordHash,
+    }
+
+    model.create(dataPrueba, (err, docs) => {
         if (err) {
             console.log('Error ', err);
             res.render('error');
@@ -17,17 +29,19 @@ const create = (req, res) => {
 
 };
 
-const validator = (req, res) => {
+const validator = async (req, res) => {
 
     const data = model(req.body);
 
-    model.find(req.body)
+    await model.find({ email: req.body.email})
         .then(async (docs) => {
-            await
-                console.log(docs)
+            
             if (docs != '') {
                 for (var i = 0; i < docs.length; i++) {
-                    if (docs[i].email == data.email && docs[i].password == data.password) {
+                    
+                    const match = await bcrypt.compare(data.password, docs[i].password);
+
+                    if (match) {
                         console.log('Valor encontrado' + docs);
                         res.redirect('/inicio' + docs[i]._id);
                     }
@@ -40,7 +54,6 @@ const validator = (req, res) => {
             console.log('Error en Login: ' + error);
             res.redirect('/');
         });
-
 };
 
 const updateUser = async (req, res) => {
