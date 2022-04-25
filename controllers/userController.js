@@ -60,10 +60,14 @@ const updateUser = async (req, res) => {
 
     const _id = req.params._id
 
+    password = req.body.password
+
+    passwordHash = await bcrypt.hash(password, 8)
+
     console.log("_ID" + _id)
 
     const filter = { _id: _id };
-    const update = { username: req.body.username, email: req.body.email, password : req.body.password };
+    const update = { username: req.body.username, email: req.body.email, password : passwordHash };
 
     model.findOneAndUpdate(filter, update, async (err, result) =>{
 
@@ -89,10 +93,8 @@ const deleteUser = async (req, res) => {
             return console.log(err);
         
         console.log('User successfully removed from polls collection!');
-        res.status(200).send();
         res.redirect('/');
     });
-
 
 }
 
